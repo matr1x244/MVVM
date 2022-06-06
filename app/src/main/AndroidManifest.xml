@@ -14,7 +14,7 @@
         android:theme="@style/Theme.MVVM"
         tools:targetApi="31">
         <activity
-            android:name=".Main.MainActivity"
+            android:name="com.geekbrains.mvvm.presentation.view.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

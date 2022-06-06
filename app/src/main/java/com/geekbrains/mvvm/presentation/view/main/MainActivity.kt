@@ -1,4 +1,4 @@
-package com.geekbrains.mvvm.Main
+package com.geekbrains.mvvm.presentation.view.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
