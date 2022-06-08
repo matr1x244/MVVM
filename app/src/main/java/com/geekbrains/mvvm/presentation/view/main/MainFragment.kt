@@ -56,6 +56,7 @@ class MainFragment : Fragment() {
 
     private fun koinPrint() {
         println("@@@ ${printKoin.showPrint}")
+        println("@@@ ${printKoin.showPrintFunc()}")
     }
 
     override fun onDestroyView() {
