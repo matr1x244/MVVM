@@ -5,9 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.geekbrains.mvvm.databinding.FragmentMainBinding
+import com.geekbrains.mvvm.domain.BaseRepo
+import com.geekbrains.mvvm.domain.PrintKoin
+import com.geekbrains.mvvm.domain.Repo
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainFragment : Fragment() {
 
@@ -18,9 +22,8 @@ class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by lazy {
-        ViewModelProvider(this).get(MainFragmentViewModel::class.java)
-    }
+    private val viewModel: MainFragmentViewModel by viewModel()
+    private val printKoin: PrintKoin by inject()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,6 +39,7 @@ class MainFragment : Fragment() {
 
         btnStart()
         mvvmLiveData()
+        koinPrint()
     }
 
     private fun btnStart() {
@@ -48,6 +52,10 @@ class MainFragment : Fragment() {
         viewModel.repos.observe(viewLifecycleOwner) {
             binding.textView.text = it
         }
+    }
+
+    private fun koinPrint() {
+        println("@@@ ${printKoin.showPrint}")
     }
 
     override fun onDestroyView() {

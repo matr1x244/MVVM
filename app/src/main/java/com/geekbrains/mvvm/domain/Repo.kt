@@ -4,13 +4,12 @@ import kotlin.random.Random
 
 class Repo : BaseRepo {
 
-    val quotes = "testing println"
+    val quotes = "@@@ + $this" + "class Repo"
 
     override fun provideData(): String {
         val quotes = arrayOf("One", "Two", "Three", "github", "gitlab", "geekbrains")
         val randomValue = Random.nextInt(quotes.size)
         return quotes[randomValue]
-        println(quotes)
     }
 
 }

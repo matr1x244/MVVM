@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.geekbrains.mvvm.domain.BaseRepo
 import com.geekbrains.mvvm.domain.Repo
 
-class MainFragmentViewModel : ViewModel() {
+class MainFragmentViewModel() : ViewModel() {
 
     private val repo: BaseRepo = Repo()
 
