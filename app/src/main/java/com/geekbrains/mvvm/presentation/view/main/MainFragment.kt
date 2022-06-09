@@ -55,6 +55,8 @@ class MainFragment : Fragment() {
     }
 
     private fun koinPrint() {
+        binding.textKoin0.text = printKoin.showPrint
+        binding.textKoin1.text = printKoin.showPrintFunc().toString()
         println("@@@ ${printKoin.showPrint}")
         println("@@@ ${printKoin.showPrintFunc()}")
     }
