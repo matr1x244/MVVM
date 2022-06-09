@@ -3,8 +3,11 @@ package com.geekbrains.mvvm.presentation.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.geekbrains.mvvm.domain.BaseRepo
 import com.geekbrains.mvvm.domain.Repo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainFragmentViewModel() : ViewModel() {
 
@@ -14,8 +17,10 @@ class MainFragmentViewModel() : ViewModel() {
     val repos: LiveData<String> = _repos
 
     fun getData() {
-        val data = repo.provideData()
-        _repos.postValue(data) //postValue(..) асинхронный вызов из любого потока!
+        viewModelScope.launch(Dispatchers.IO) {
+            val data = repo.provideData()
+            _repos.postValue(data) //postValue(..) асинхронный вызов из любого потока!
+        }
     }
 
 }

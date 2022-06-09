@@ -8,10 +8,12 @@ import androidx.fragment.app.Fragment
 import com.geekbrains.mvvm.databinding.FragmentMainBinding
 import com.geekbrains.mvvm.domain.BaseRepo
 import com.geekbrains.mvvm.domain.PrintKoin
+import com.geekbrains.mvvm.domain.PrintKoinConstructor
 import com.geekbrains.mvvm.domain.Repo
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class MainFragment : Fragment() {
 
@@ -24,6 +26,13 @@ class MainFragment : Fragment() {
 
     private val viewModel: MainFragmentViewModel by viewModel()
     private val printKoin: PrintKoin by inject()
+
+    /**
+     * если у класса уже есть входные параметры
+     * (пример: class PrintKoinConstructor(private val data: String)
+     * тогда при inject { parametersOf() } - обязательно!!!
+     */
+    private val printKoinConstructor: PrintKoinConstructor by inject { parametersOf("printKoinConstructor testing") }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,6 +68,9 @@ class MainFragment : Fragment() {
         binding.textKoin1.text = printKoin.showPrintFunc().toString()
         println("@@@ ${printKoin.showPrint}")
         println("@@@ ${printKoin.showPrintFunc()}")
+
+        binding.textKoin2.text = printKoinConstructor.showPrintConstructor().toString()
+        println("@@@ ${printKoinConstructor.showPrintConstructor()}")
     }
 
     override fun onDestroyView() {
