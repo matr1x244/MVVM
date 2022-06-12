@@ -8,6 +8,7 @@ import com.geekbrains.mvvm.domain.BaseRepo
 import com.geekbrains.mvvm.domain.Repo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainFragmentViewModel() : ViewModel() {
 
@@ -19,7 +20,9 @@ class MainFragmentViewModel() : ViewModel() {
     fun getData() {
         viewModelScope.launch(Dispatchers.IO) {
             val data = repo.provideData()
-            _repos.postValue(data) //postValue(..) асинхронный вызов из любого потока!
+            withContext(Dispatchers.Main){
+                _repos.postValue(data) //postValue(..) асинхронный вызов из любого потока!
+            }
         }
     }
 
