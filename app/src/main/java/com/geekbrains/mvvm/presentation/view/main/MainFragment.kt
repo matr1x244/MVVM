@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.geekbrains.mvvm.databinding.FragmentMainBinding
 import com.geekbrains.mvvm.domain.BaseRepo
@@ -11,11 +12,12 @@ import com.geekbrains.mvvm.domain.PrintKoin
 import com.geekbrains.mvvm.domain.PrintKoinConstructor
 import com.geekbrains.mvvm.domain.Repo
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
+import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(), CoroutineScope by MainScope() {
 
     companion object {
         fun newInstance() = MainFragment()
@@ -49,6 +51,16 @@ class MainFragment : Fragment() {
         btnStart()
         mvvmLiveData()
         koinPrint()
+        coroutines()
+    }
+
+    private fun coroutines() {
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(5_000)
+            withContext(Dispatchers.Main){
+                Toast.makeText(activity, "coroutines start in MainFragment", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun btnStart() {
@@ -74,6 +86,7 @@ class MainFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        cancel()
         super.onDestroyView()
         _binding = null
     }
