@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.geekbrains.mvvm.databinding.FragmentMainBinding
-import com.geekbrains.mvvm.domain.BaseRepo
 import com.geekbrains.mvvm.domain.PrintKoin
 import com.geekbrains.mvvm.domain.PrintKoinConstructor
-import com.geekbrains.mvvm.domain.Repo
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
@@ -28,6 +26,8 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
 
     private val viewModel: MainFragmentViewModel by viewModel()
     private val printKoin: PrintKoin by inject()
+
+    private var coroutines2: Job? = null
 
     /**
      * если у класса уже есть входные параметры
@@ -52,14 +52,46 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         mvvmLiveData()
         koinPrint()
         coroutines()
+        coroutines2()
+        coroutinesExpetion()
     }
 
     private fun coroutines() {
         CoroutineScope(Dispatchers.IO).launch {
             delay(5_000)
-            withContext(Dispatchers.Main){
-                Toast.makeText(activity, "coroutines start in MainFragment", Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(activity, "coroutines start in MainFragment", Toast.LENGTH_SHORT)
+                    .show()
             }
+        }
+    }
+
+    private fun coroutines2() {
+        coroutines2 = CoroutineScope(Dispatchers.IO).launch {
+            while (coroutines2?.isActive == true) {
+                delay(1_000)
+                println("@@@ isActive + ${coroutines2?.isActive}")
+                println("@@@ isCancelled + ${coroutines2?.isCancelled}")
+                println("@@@ isCompleted + ${coroutines2?.isCompleted}")
+            }
+        }
+        btnStop()
+    }
+
+    private fun btnStop() {
+        binding.btnStop.setOnClickListener {
+            coroutines2?.cancel()
+            println("@@@ STOP + $coroutines2")
+        }
+    }
+
+    private fun coroutinesExpetion() {
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            println("VVV $throwable")
+        }
+        CoroutineScope(Dispatchers.IO).launch(coroutineExceptionHandler + SupervisorJob()) {
+            val mResult = 10 / 0
+            println("VVV + $mResult")
         }
     }
 
