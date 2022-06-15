@@ -11,11 +11,15 @@ import com.geekbrains.mvvm.domain.PrintKoin
 import com.geekbrains.mvvm.domain.PrintKoinConstructor
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import java.util.concurrent.CopyOnWriteArrayList
 
 class MainFragment : Fragment(), CoroutineScope by MainScope() {
 
@@ -57,6 +61,7 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         coroutines2()
         coroutinesExpetion()
         flowStarting()
+        callBackPrint()
     }
 
     private fun coroutines() {
@@ -98,9 +103,9 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun flowStarting() {
+    private fun flowStarting(){
         var flow = flow {
-            repeat(5) {
+            repeat(5){
                 delay(1_000)
                 emit("EEE $it") //!!!
             }
@@ -109,8 +114,48 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
             flow
                 .map { it + 2 }
                 .collect {
-                    println(it)
-                }
+                println(it)
+            }
+        }
+    }
+
+    private fun callBackPrint(){
+        val someCallBack = SomeCallBack() // создаем экземпляр класса
+        val flow = createFlowCallBack(someCallBack) // создаем flow
+
+        CoroutineScope(Dispatchers.IO).launch {
+            flow.collect{
+                println("FFF $it")
+            }
+        }
+
+        binding.btnCallBackFlow.setOnClickListener {
+            someCallBack.invoke() // запускаем слушателя по кнопке
+        }
+    }
+
+    private fun createFlowCallBack(someCallBack: SomeCallBack) = callbackFlow {
+        val listener = object : SomeCallBack.Listener{
+            override fun onChange(value: Int) {
+                trySend(value) // отправляем данные
+            }
+        }
+        someCallBack.addListener(listener) //добавляем слушателя
+        awaitClose{someCallBack.remove(listener)} // отписываем слушателя
+    }
+
+    class SomeCallBack {
+        var increment = 0
+        val listeners = CopyOnWriteArrayList<Listener>() // создаем массив
+
+        fun addListener(listener : Listener) = listeners.add(listener)
+
+        fun remove(listener: Listener) = listeners.remove(listener)
+
+        fun invoke() = listeners.forEach {it.onChange(increment++)} // отслеживаем изменения
+
+        interface Listener {
+            fun onChange(value: Int)
         }
     }
 
