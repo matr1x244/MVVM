@@ -11,6 +11,8 @@ import com.geekbrains.mvvm.domain.PrintKoin
 import com.geekbrains.mvvm.domain.PrintKoinConstructor
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -54,6 +56,7 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         coroutines()
         coroutines2()
         coroutinesExpetion()
+        flowStarting()
     }
 
     private fun coroutines() {
@@ -92,6 +95,22 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         CoroutineScope(Dispatchers.IO).launch(coroutineExceptionHandler + SupervisorJob()) {
             val mResult = 10 / 0
             println("VVV + $mResult")
+        }
+    }
+
+    private fun flowStarting() {
+        var flow = flow {
+            repeat(5) {
+                delay(1_000)
+                emit("EEE $it") //!!!
+            }
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            flow
+                .map { it + 2 }
+                .collect {
+                    println(it)
+                }
         }
     }
 
