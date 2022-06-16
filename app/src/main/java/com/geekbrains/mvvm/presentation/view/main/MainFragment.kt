@@ -12,10 +12,7 @@ import com.geekbrains.mvvm.domain.PrintKoinConstructor
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -110,13 +107,29 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
                 emit("EEE $it") //!!!
             }
         }
+
+        /**
+         * первый способ принцип работы
+         */
+
         CoroutineScope(Dispatchers.IO).launch {
-            flow
-                .map { it + 2 }
-                .collect {
-                println(it)
+                flow
+                    .map { it + 2 } // через map можем преобразовать тип и т.д менять какие либо данные
+                    .collect {
+                 println("EEE ____ $it")
+                }
             }
-        }
+
+        /**
+         * второй способ принцип работы такой же как первый
+         */
+            flow
+                .map { value -> Int } // через map можем преобразовать тип и т.д менять какие либо данные
+                .onEach {
+                    println("EEE onEACH $it")
+                }
+                .launchIn(CoroutineScope(Dispatchers.IO))
+
     }
 
     private fun callBackPrint(){
