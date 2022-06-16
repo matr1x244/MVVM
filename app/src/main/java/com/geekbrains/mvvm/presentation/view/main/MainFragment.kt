@@ -59,6 +59,7 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         coroutinesExpetion()
         flowStarting()
         callBackPrint()
+        flowTesting()
     }
 
     private fun coroutines() {
@@ -97,6 +98,26 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         CoroutineScope(Dispatchers.IO).launch(coroutineExceptionHandler + SupervisorJob()) {
             val mResult = 10 / 0
             println("VVV + $mResult")
+        }
+    }
+
+    /**
+     * Пример использования корутин flow с использованием фильтра при callback
+     * через .filet выводим только +4 шаг. в printlm
+     */
+    private fun flowTesting(){
+        val someCallBack = SomeCallBack() // создаем экземпляр класса
+        val flow = createFlowCallBack(someCallBack) // создаем flow
+
+        flow
+            .map { it * 2 }
+            .filter { it % 4 == 0 }
+            .onEach {
+                println("@@EE $it")
+            }
+            .launchIn(CoroutineScope(Dispatchers.IO))
+        binding.btnCallBackFlow.setOnClickListener {
+            someCallBack.invoke()
         }
     }
 
