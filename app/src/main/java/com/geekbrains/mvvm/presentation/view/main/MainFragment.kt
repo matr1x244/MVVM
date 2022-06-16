@@ -113,8 +113,9 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
             .map { it * 2 }
             .filter { it % 4 == 0 }
             .sample(2000) // .sample используется для получения результата каждый "2000" секунды. последний данные отдает при запросе
+            .withIndex() // получаем значение по индексу
             .onEach {
-                println("@@EE $it")
+                println("@@EE index = ${it.index} and value = ${it.value}")
             }
             .launchIn(CoroutineScope(Dispatchers.IO))
         binding.btnCallBackFlow.setOnClickListener {
