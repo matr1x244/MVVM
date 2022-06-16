@@ -59,7 +59,8 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         coroutinesExpetion()
         flowStarting()
         callBackPrint()
-        flowTesting()
+//        flowTesting()
+        flowDistinctUntilChanged()
     }
 
     private fun coroutines() {
@@ -102,6 +103,24 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     /**
+     * .distinctUntilChanged() если приходит два одинаковых значения - запрос не будет тогда выполняться
+     */
+    private fun flowDistinctUntilChanged(){
+        val someCallBack = SomeCallBack() // создаем экземпляр класса
+        val flow = createFlowCallBack(someCallBack) // создаем flow
+
+        flow
+            .distinctUntilChanged() // если приходит два одинаковых значения - запрос не будет тогда выполняться
+            .onEach {
+                println("@@DD index = $it")
+            }
+            .launchIn(CoroutineScope(Dispatchers.IO))
+        binding.btnCallBackFlow.setOnClickListener {
+            someCallBack.invoke()
+        }
+    }
+
+    /**
      * Пример использования корутин flow с использованием фильтра при callback
      * через .filet выводим только +4 шаг. в printlm
      */
@@ -114,7 +133,8 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
 //            .filter { it % 4 == 0 }
 //            .sample(2000) // .sample используется для получения результата каждый "2000" секунды. последний данные отдает при запросе
             .withIndex() // получаем значение по индексу
-            .debounce(1000) // если проходит 1000 сек, приходит ответ если не выдержано это время а запрос идёт тогда данные не будут отдаваться
+//            .debounce(1000) // если проходит 1000 сек, приходит ответ если не выдержано это время а запрос идёт тогда данные не будут отдаваться
+            .distinctUntilChanged() // если приходит два одинаковых значения - запрос не будет тогда выполняться
             .onEach {
                 println("@@EE index = ${it.index} and value = ${it.value}")
             }
@@ -189,7 +209,10 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
 
         fun remove(listener: Listener) = listeners.remove(listener)
 
-        fun invoke() = listeners.forEach {it.onChange(increment++)} // отслеживаем изменения
+        fun invoke() = listeners.forEach {
+            it.onChange(increment++)
+            increment = 1 // для  .distinctUntilChanged() private fun flowDistinctUntilChanged()
+        } // отслеживаем изменения
 
         interface Listener {
             fun onChange(value: Int)
