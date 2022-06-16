@@ -112,6 +112,7 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         flow
             .map { it * 2 }
             .filter { it % 4 == 0 }
+            .sample(2000) // .sample используется для получения результата каждый "2000" секунды. последний данные отдает при запросе
             .onEach {
                 println("@@EE $it")
             }
