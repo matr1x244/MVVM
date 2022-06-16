@@ -110,10 +110,11 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         val flow = createFlowCallBack(someCallBack) // создаем flow
 
         flow
-            .map { it * 2 }
-            .filter { it % 4 == 0 }
-            .sample(2000) // .sample используется для получения результата каждый "2000" секунды. последний данные отдает при запросе
+//            .map { it * 2 }
+//            .filter { it % 4 == 0 }
+//            .sample(2000) // .sample используется для получения результата каждый "2000" секунды. последний данные отдает при запросе
             .withIndex() // получаем значение по индексу
+            .debounce(1000) // если проходит 1000 сек, приходит ответ если не выдержано это время а запрос идёт тогда данные не будут отдаваться
             .onEach {
                 println("@@EE index = ${it.index} and value = ${it.value}")
             }
