@@ -1,15 +1,29 @@
 package com.geekbrains.mvvm.presentation.view.main
 
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
+import coil.transform.BlurTransformation
+import coil.transform.CircleCropTransformation
+import coil.transform.GrayscaleTransformation
+import coil.transform.RoundedCornersTransformation
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.*
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.geekbrains.mvvm.R
 import com.geekbrains.mvvm.databinding.FragmentMainBinding
 import com.geekbrains.mvvm.domain.PrintKoin
 import com.geekbrains.mvvm.domain.PrintKoinConstructor
 import com.geekbrains.mvvm.presentation.viewmodels.MainFragmentViewModel
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
@@ -18,7 +32,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import java.util.concurrent.CopyOnWriteArrayList
 
-class MainFragment : Fragment(), CoroutineScope by MainScope() {
+class MainFragment : Fragment() {
 
     companion object {
         fun newInstance() = MainFragment()
@@ -59,8 +73,11 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         coroutinesExpetion()
         flowStarting()
         callBackPrint()
-//        flowTesting()
-        flowDistinctUntilChanged()
+        flowTesting()
+//        flowDistinctUntilChanged()
+//        picassoImage()
+//        coilImage()
+        glideImage()
     }
 
     private fun coroutines() {
@@ -104,8 +121,10 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
 
     /**
      * .distinctUntilChanged() если приходит два одинаковых значения - запрос не будет тогда выполняться
+     * fun invoke() = listeners.forEach { it.onChange(increment++) increment = 1 }
+     * // для  .distinctUntilChanged() private fun flowDistinctUntilChanged() // отслеживаем изменения
      */
-    private fun flowDistinctUntilChanged(){
+    private fun flowDistinctUntilChanged() {
         val someCallBack = SomeCallBack() // создаем экземпляр класса
         val flow = createFlowCallBack(someCallBack) // создаем flow
 
@@ -124,7 +143,7 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
      * Пример использования корутин flow с использованием фильтра при callback
      * через .filet выводим только +4 шаг. в printlm
      */
-    private fun flowTesting(){
+    private fun flowTesting() {
         val someCallBack = SomeCallBack() // создаем экземпляр класса
         val flow = createFlowCallBack(someCallBack) // создаем flow
 
@@ -144,9 +163,9 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         }
     }
 
-    private fun flowStarting(){
+    private fun flowStarting() {
         var flow = flow {
-            repeat(5){
+            repeat(5) {
                 delay(1_000)
                 emit("EEE $it") //!!!
             }
@@ -157,31 +176,31 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
          */
 
         CoroutineScope(Dispatchers.IO).launch {
-                flow
-                    .map { it + 2 } // через map можем преобразовать тип и т.д менять какие либо данные
-                    .collect {
-                 println("EEE ____ $it")
+            flow
+                .map { it + 2 } // через map можем преобразовать тип и т.д менять какие либо данные
+                .collect {
+                    println("EEE ____ $it")
                 }
-            }
+        }
 
         /**
          * второй способ принцип работы такой же как первый
          */
-            flow
-                .map { value -> Int } // через map можем преобразовать тип и т.д менять какие либо данные
-                .onEach {
-                    println("EEE onEACH $it")
-                }
-                .launchIn(CoroutineScope(Dispatchers.IO))
+        flow
+            .map { value -> Int } // через map можем преобразовать тип и т.д менять какие либо данные
+            .onEach {
+                println("EEE onEACH $it")
+            }
+            .launchIn(CoroutineScope(Dispatchers.IO))
 
     }
 
-    private fun callBackPrint(){
+    private fun callBackPrint() {
         val someCallBack = SomeCallBack() // создаем экземпляр класса
         val flow = createFlowCallBack(someCallBack) // создаем flow
 
         CoroutineScope(Dispatchers.IO).launch {
-            flow.collect{
+            flow.collect {
                 println("FFF $it")
             }
         }
@@ -192,26 +211,26 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
     }
 
     private fun createFlowCallBack(someCallBack: SomeCallBack) = callbackFlow {
-        val listener = object : SomeCallBack.Listener{
+        val listener = object : SomeCallBack.Listener {
             override fun onChange(value: Int) {
                 trySend(value) // отправляем данные
             }
         }
         someCallBack.addListener(listener) //добавляем слушателя
-        awaitClose{someCallBack.remove(listener)} // отписываем слушателя
+        awaitClose { someCallBack.remove(listener) } // отписываем слушателя
     }
 
     class SomeCallBack {
         var increment = 0
         val listeners = CopyOnWriteArrayList<Listener>() // создаем массив
 
-        fun addListener(listener : Listener) = listeners.add(listener)
+        fun addListener(listener: Listener) = listeners.add(listener)
 
         fun remove(listener: Listener) = listeners.remove(listener)
 
         fun invoke() = listeners.forEach {
             it.onChange(increment++)
-            increment = 1 // для  .distinctUntilChanged() private fun flowDistinctUntilChanged()
+//            increment = 1 // для  .distinctUntilChanged() private fun flowDistinctUntilChanged()
         } // отслеживаем изменения
 
         interface Listener {
@@ -241,8 +260,64 @@ class MainFragment : Fragment(), CoroutineScope by MainScope() {
         println("@@@ ${printKoinConstructor.showPrintConstructor()}")
     }
 
+
+    private fun picassoImage() {
+        val imageUrl = "https://xakep.ru/wp-content/uploads/2015/11/5735032857_50afa38a80_o.jpg"
+
+        Picasso.get()
+            .load(imageUrl)
+            .into(binding.image)
+    }
+
+    private fun coilImage() {
+        val imageUrl = "https://xakep.ru/wp-content/uploads/2015/11/5735032857_50afa38a80_o.jpg"
+        val gifUrl = "https://acegif.com/wp-content/uploads/2021/4fh5wi/pepefrg-40.gif"
+
+        /**
+         * image Url
+         */
+//        binding.image.load(imageUrl){
+//            transformations(CircleCropTransformation())
+//            placeholder(R.drawable.ic_launcher_foreground)
+//            crossfade(1000)
+//        }
+        /**
+         * imageGif URL
+         */
+
+        val gifS = ImageRequest.Builder(requireActivity())
+            .data(gifUrl)
+//            .transformations(CircleCropTransformation()) // увы Coil не может на анимации обрезать :(
+//            .transformations(BlurTransformation(requireActivity(),2f,5f)) // размытие
+//            .transformations(RoundedCornersTransformation(10f)) // обрезаем края но анимация stop.
+            .target(binding.image)
+            .build()
+        ImageLoader.Builder(requireActivity())
+            .componentRegistry {
+                val decoderGif = if (SDK_INT >= 28) {
+                    ImageDecoderDecoder(requireActivity())
+                } else {
+                    GifDecoder()
+                }
+                add(decoderGif)
+            }
+            .build()
+            .enqueue(gifS)
+    }
+
+    private fun glideImage(){
+        val imageUrl = "https://xakep.ru/wp-content/uploads/2015/11/5735032857_50afa38a80_o.jpg"
+        val gifUrl = "https://acegif.com/wp-content/uploads/2021/4fh5wi/pepefrg-40.gif"
+
+        Glide.with(requireActivity())
+            .load(gifUrl)
+            .transform(CircleCrop(),RoundedCorners(16))
+            .transition(DrawableTransitionOptions.withCrossFade(2000))
+            .into(binding.image)
+
+    }
+
     override fun onDestroyView() {
-        cancel()
         super.onDestroyView()
         _binding = null
     }
